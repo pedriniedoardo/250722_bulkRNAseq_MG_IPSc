@@ -96,19 +96,26 @@ pmap(list(list_df_shr,names(list_df_shr)),function(x,y){
 })
 
 # Another useful diagnostic plot is the histogram of the p values (figure below). This plot is best formed by excluding genes with very small counts, which otherwise generate spikes in the histogram.
-list_df$BMP9_vs_Mock %>%
+list_df$cytokine_vs_ctrl %>%
   data.frame()%>%
   dplyr::filter(baseMean>1)%>%
   ggplot(aes(x=pvalue))+geom_histogram(breaks = 0:20/20) +
   theme_bw()
-ggsave("../../out/plot/histogram_pvalue_BMP9.pdf",width = 4,height = 3)
+ggsave("../../out/plot/histogram_pvalue_cytokine.pdf",width = 4,height = 3)
+
+list_df$CSF_vs_ctrl %>%
+  data.frame()%>%
+  dplyr::filter(baseMean>1)%>%
+  ggplot(aes(x=pvalue))+geom_histogram(breaks = 0:20/20) +
+  theme_bw()
+ggsave("../../out/plot/histogram_pvalue_CSF.pdf",width = 4,height = 3)
 
 # PLOTTING RESULTS --------------------------------------------------------
 # add the info of the genename
-test_plot <- list_df$BMP9_vs_Mock%>%
+test_plot <- list_df$cytokine_vs_ctrl%>%
   data.frame()%>%
   # add a clor variable in case significant
-  mutate(col=ifelse(((padj<0.05)&abs(log2FoldChange)>1&!is.na(symbol)),yes = 1,no = 0)) %>%
+  mutate(col=ifelse(((padj<0.05)&abs(log2FoldChange)>1&!is.na(SYMBOL)),yes = 1,no = 0)) %>%
   dplyr::filter(!is.na(col))
 
 test_plot %>%
@@ -121,50 +128,50 @@ test_plot %>%
   scale_color_manual(values = c("black","red"))+theme(legend.position = "none")+
   ggrepel::geom_text_repel(
     data = test_plot[test_plot$col==1,],
-    aes(label = symbol),
+    aes(label = SYMBOL),
     size = 5,
     box.padding = unit(0.35, "lines"),
     point.padding = unit(0.3, "lines")) +
   theme_bw() +
   theme(legend.position = "none")
-ggsave("../../out/plot/vulcano_plot_text_BMP9.pdf",width = 12,height = 12)
+ggsave("../../out/plot/vulcano_plot_text_cytokine.pdf",width = 12,height = 12)
 #
-test_plot_shr <- list_df_shr$BMP9_vs_Mock_shr%>%
+test_plot_shr <- list_df_shr$cytokine_vs_ctrl_shr%>%
   data.frame()%>%
   # add a clor variable in case significant
-  mutate(col=ifelse(((padj<0.05)&abs(log2FoldChange)>1&!is.na(symbol)),yes = 1,no = 0)) %>%
+  mutate(col=ifelse(((padj<0.05)&abs(log2FoldChange)>1&!is.na(SYMBOL)),yes = 1,no = 0)) %>%
   dplyr::filter(!is.na(col))
 
 test_plot_shr %>%
   ggplot(aes(x=log2FoldChange,y=-log(padj)))+
   # geom_point()
-  geom_point(data = test_plot[test_plot$col==0,],aes(x=log2FoldChange,y=-log(padj),col=factor(col)),alpha=0.05)+
-  geom_point(data = test_plot[test_plot$col==1,],aes(x=log2FoldChange,y=-log(padj),col=factor(col)),alpha=0.5)+
+  geom_point(data = test_plot_shr[test_plot_shr$col==0,],aes(x=log2FoldChange,y=-log(padj),col=factor(col)),alpha=0.05)+
+  geom_point(data = test_plot_shr[test_plot_shr$col==1,],aes(x=log2FoldChange,y=-log(padj),col=factor(col)),alpha=0.5)+
   geom_vline(xintercept = c(-1,1),col="red",linetype="dashed")+
   geom_hline(yintercept = (-log(0.05)),col="red",linetype="dashed")+
   scale_color_manual(values = c("black","red"))+theme(legend.position = "none")+
   ggrepel::geom_text_repel(
-    data = test_plot[test_plot$col==1,],
-    aes(label = symbol),
+    data = test_plot_shr[test_plot_shr$col==1,],
+    aes(label = SYMBOL),
     size = 5,
     box.padding = unit(0.35, "lines"),
     point.padding = unit(0.3, "lines")) +
   theme_bw() +
   theme(legend.position = "none")
-ggsave("../../out/plot/vulcano_plot_text_BMP9_shr.pdf",width = 12,height = 12)
+ggsave("../../out/plot/vulcano_plot_text_cytokine_shr.pdf",width = 12,height = 12)
 
 # plotMA(res, ylim = c(-5, 5))
-list_df$BMP9_vs_Mock %>%
+list_df$cytokine_vs_ctrl %>%
   data.frame()%>%
   mutate(color = ifelse(padj<0.05,yes = 1,no = 0))%>%
   mutate(color = factor(ifelse(is.na(color),yes = 0,no = color)))%>%
   ggplot(aes(baseMean,y = log2FoldChange,col=color)) + geom_point(alpha=0.2) + 
   scale_x_log10() + scale_color_manual(values = c("gray","red")) + theme_bw() + 
   theme(legend.position = "none")
-ggsave("../../out/plot/MA_plot_BMP9.pdf",width = 4,height = 3)
+ggsave("../../out/plot/MA_plot_cytokine.pdf",width = 4,height = 3)
 
 # using the shrinked values
-list_df_shr$BMP9_vs_Mock_shr %>%
+list_df_shr$cytokine_vs_ctrl_shr %>%
   data.frame()%>%
   mutate(color = ifelse(padj<0.05,yes = 1,no = 0))%>%
   mutate(color = factor(ifelse(is.na(color),yes = 0,no = color)))%>%
@@ -173,65 +180,71 @@ list_df_shr$BMP9_vs_Mock_shr %>%
   scale_color_manual(values = c("gray","red")) + 
   theme_bw() +
   theme(legend.position = "none")
-ggsave("../../out/plot/MA_plot_shr_BMP9.pdf",width = 4,height = 3)
+ggsave("../../out/plot/MA_plot_shr_cytokine.pdf",width = 4,height = 3)
 
 # the DEGs plot stringent
-DEG_1 <- list_df$BMP9_vs_Mock %>%
+df_DEG_1 <- list_df$cytokine_vs_ctrl %>%
   data.frame()%>%
   # add a clor variable in case significant
   mutate(col=ifelse(((padj<0.05)&abs(log2FoldChange)>1),yes = 1,no = 0)) %>%
-  dplyr::filter(col==1) %>%
-  pull(symbol)
+  dplyr::filter(col==1)
 
 mat_filter <- assay(vds_filter) %>%
   data.frame() %>%
   # dplyr::select(contains(c("_0_","_6_"))) %>%
   as.matrix()
 
-mat <- mat_filter[rownames(vds_filter) %in% DEG_1, ]
+# mat <- mat_filter[rownames(vds_filter) %in% df_DEG_1$GENEID, ]
+mat <- mat_filter[df_DEG_1$GENEID, ]
 mat2 <- (mat - rowMeans(mat))/rowSds(mat)
+# change the rownames with gene symbols
+rownames(mat2) <- df_DEG_1$SYMBOL
 #
 
 sample_ordered <- data.frame(sample = colnames(mat2)) %>%
   left_join(ddsHTSeq_filter@colData %>%
               data.frame(),by="sample")
+  
 
 # update the column name of the matrix
-colnames(mat2) <- sample_ordered$sample_name
+colnames(mat2) <- sample_ordered$sample
 
 column_ha <- HeatmapAnnotation(treat = sample_ordered$treat,
                                gender = sample_ordered$gender,
-                               col = list(treat = c("mock" = "gray", "BMP9" = "black"),
+                               col = list(treat = c("untreated" = "gray", "CSF"="cyan","cytokine" = "black"),
                                           gender = c("M" = "blue", "F" = "pink"))) 
 
 ht2 <- Heatmap(mat2, 
                name = "exp", 
-               column_title = "BMP9",
-               row_names_gp = gpar(fontsize = 3),
-               top_annotation = column_ha, show_row_names = F
+               column_title = "treat",
+               row_names_gp = gpar(fontsize = 5),
+               top_annotation = column_ha, show_row_names = T
                # cluster_rows = F, 
                # right_annotation = row_ha, 
                # row_split = rep(c(1,2,3,4),c(2,3,4,7))
 ) 
-pdf("../../out/plot/heatmap_BMP9_DEG.pdf",width = 4,height = 7) 
+pdf("../../out/plot/heatmap_DEG_cytokine.pdf",width = 5,height = 6) 
 draw(ht2,heatmap_legend_side = "left",annotation_legend_side = "left") 
 dev.off()
 
 # the DEGs plot shr
-DEG_2 <- list_df_shr$BMP9_vs_Mock_shr %>%
+df_DEG_2 <- list_df_shr$cytokine_vs_ctrl_shr %>%
   data.frame()%>%
   # add a clor variable in case significant
   mutate(col=ifelse(((padj<0.05)&abs(log2FoldChange)>1),yes = 1,no = 0)) %>%
-  dplyr::filter(col==1) %>%
-  pull(symbol)
+  dplyr::filter(col==1)
 
 # mat_filter <- assay(vds_filter) %>%
 #   data.frame() %>%
 #   # dplyr::select(contains(c("_0_","_6_"))) %>%
 #   as.matrix()
 
-mat_shr <- mat_filter[rownames(vds_filter) %in% DEG_2, ]
+# mat_shr <- mat_filter[rownames(vds_filter) %in% df_DEG_2$GENEID, ]
+mat_shr <- mat_filter[df_DEG_2$GENEID, ]
 mat2_shr <- (mat_shr - rowMeans(mat_shr))/rowSds(mat_shr)
+# change the rownames with gene symbols
+rownames(mat2_shr) <- df_DEG_2$SYMBOL
+
 #
 
 sample_ordered_shr <- data.frame(sample = colnames(mat2_shr)) %>%
@@ -239,24 +252,24 @@ sample_ordered_shr <- data.frame(sample = colnames(mat2_shr)) %>%
               data.frame(),by="sample")
 
 # update the column name of the matrix
-colnames(mat2_shr) <- sample_ordered_shr$sample_name
+colnames(mat2_shr) <- sample_ordered_shr$sample
 
 column_ha_shr <- HeatmapAnnotation(treat = sample_ordered_shr$treat,
                                    gender = sample_ordered_shr$gender,
-                                   col = list(treat = c("mock" = "gray", "BMP9" = "black"),
+                                   col = list(treat = c("untreated" = "gray", "CSF"="cyan","cytokine" = "black"),
                                               gender = c("M" = "blue", "F" = "pink"))) 
 
 
 ht2_shr <- Heatmap(mat2_shr, 
                    name = "exp", 
-                   column_title = "BMP9 shr",
-                   row_names_gp = gpar(fontsize = 3),
-                   top_annotation = column_ha_shr, show_row_names = F
+                   column_title = "treat shr",
+                   row_names_gp = gpar(fontsize = 5),
+                   top_annotation = column_ha_shr, show_row_names = T
                    # cluster_rows = F, 
                    # right_annotation = row_ha, 
                    # row_split = rep(c(1,2,3,4),c(2,3,4,7))
 ) 
-pdf("../../out/plot/heatmap_BMP9_DEG_shr.pdf",width = 4,height = 7) 
+pdf("../../out/plot/heatmap_DEG_treat_shr.pdf",width = 5,height = 6) 
 draw(ht2_shr,heatmap_legend_side = "left",annotation_legend_side = "left") 
 dev.off()
 
